@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>TS + 扁平化模型驱动导航</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+  <script src="https://unpkg.com/vue@3"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+  <script src="https://unpkg.com/@form-create/element-ui@next"></script>
+  <style>
+    .mega-nav { border-bottom: 1px solid #dcdfe6; margin-bottom: 20px; }
+    pre { background: #f4f4f5; padding: 15px; border-radius: 4px; font-size: 12px; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- 1. 动态渲染层：由扁平化数据转换而来的树 -->
+  <el-menu mode="horizontal" class="mega-nav">
+    <template v-for="nav in navTree" :key="nav.id">
+      
+      <!-- 有子级 -->
+      <el-sub-menu v-if="nav.children && nav.children.length" :index="nav.id">
+        <template #title>{{ nav.nav_name }}</template>
+        <el-menu-item v-for="child in nav.children" :key="child.id" :index="child.id">
+          {{ child.nav_name }}
+        </el-menu-item>
+      </el-sub-menu>
+
+      <!-- 无子级 -->
+      <el-menu-item v-else :index="nav.id">{{ nav.nav_name }}</el-menu-item>
+      
+    </template>
+  </el-menu>
+
+  <div style="padding: 20px;">
+    <el-row :gutter="40">
+      <!-- 2. 编辑器层：配置扁平化模型 -->
+      <el-col :span="10">
+        <h3>新增导航项 (Flat Model)</h3>
+        <form-create v-model:api="fApi" v-model="formData" :rule="rules" :option="option" @on-submit="onSubmit" />
+      </el-col>
+
+      <!-- 3. 数据层：展示扁平 JSON -->
+      <el-col :span="14">
+        <h3>扁平化 JSON 存储结构 (Backend Ready)</h3>
+        <pre>{{ flatNavList }}</pre>
+      </el-col>
+    </el-row>
+  </div>
+</div>
+
+<script>
+const { createApp, ref, computed, reactive } = Vue;
+
+createApp({
+  setup() {
+    const fApi = ref(null);
+    const formData = ref({});
+
+    // 核心：扁平化数据模型
+    const flatNavList = ref([
+      { id: '1', pid: null, nav_name: '首页', target_type: 1, page_id: 'home', open_method: '_self', is_show: true, sort: 100 },
+      { id: '2', pid: null, nav_name: '解决方案', target_type: 1, page_id: 'sol', open_method: '_self', is_show: true, sort: 90 },
+      { id: '3', pid: '2', nav_name: '工业互联网', target_type: 1, page_id: 'industry', open_method: '_self', is_show: true, sort: 10 },
+      { id: '4', pid: '2', nav_name: '智慧城市', target_type: 1, page_id: 'city', open_method: '_self', is_show: true, sort: 5 }
+    ]);
+
+    // 计算属性：将扁平数据实时转换为树形结构供渲染
+    const navTree = computed(() => {
+        const map = {};
+        const tree = [];
+        flatNavList.value.forEach(item => map[item.id] = { ...item, children: [] });
+        flatNavList.value.forEach(item => {
+            if (item.pid && map[item.pid]) {
+                map[item.pid].children.push(map[item.id]);
+            } else {
+                tree.push(map[item.id]);
+            }
+        });
+        return tree;
+    });
+
+    // Form-Create 配置
+    const rules = ref([
+      {
+        type: 'select', field: 'pid', title: '父级导航', value: null,
+        options: computed(() => [
+            { value: null, label: '--- 顶级导航 ---' },
+            ...flatNavList.value.filter(n => !n.pid).map(n => ({ value: n.id, label: n.nav_name }))
+        ])
+      },
+      { type: 'input', field: 'nav_name', title: '导航名称', validate: [{required: true}] },
+      {
+        type: 'radio', field: 'target_type', title: '类型', value: 1,
+        options: [{value: 1, label: '内部'}, {value: 2, label: '链接'}],
+        control: [
+            { value: 1, rule: [{ type: 'input', field: 'page_id', title: '页面ID' }] },
+            { value: 2, rule: [{ type: 'input', field: 'external_url', title: 'URL' }] }
+        ]
+      },
+      { type: 'number', field: 'sort', title: '排序', value: 0 }
+    ]);
+
+    const option = {
+      submitBtn: { innerText: '保存并加入扁平模型' }
+    };
+
+    const onSubmit = (data) => {
+      // 这里的 data 就是符合 NavItem 接口的扁平对象
+      flatNavList.value.push({
+        id: Math.random().toString(36).substring(2, 5),
+        ...data,
+        open_method: '_self',
+        is_show: true
+      });
+      ElementPlus.ElMessage.success('扁平数据已更新');
+    };
+
+    return { fApi, formData, rules, option, flatNavList, navTree, onSubmit };
+  }
+})
+.use(ElementPlus)
+.use(formCreate)
+.mount('#app');
+</script>
+</body>
+</html>

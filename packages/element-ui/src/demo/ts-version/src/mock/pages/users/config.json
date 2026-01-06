@@ -1,0 +1,4 @@
+{
+  "script": "console.log('用户管理页面已加载');",
+  "style": ".user-table { margin-top: 20px; }"
+}

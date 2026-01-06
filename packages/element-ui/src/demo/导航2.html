@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>form-create 导航示例</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <!-- 引入 Vue 和 form-create -->
+    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://unpkg.com/element-plus"></script>
+    <script src="https://unpkg.com/@form-create/element-ui@next"></script>
+    <style>
+        body { background-color: #f5f7fa; margin: 0; font-family: sans-serif; }
+        #app { padding: 20px; }
+        .nav-container { margin-bottom: 20px; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1); }
+        .content-display { background: white; padding: 40px; text-align: center; border-radius: 8px; font-size: 24px; color: #606266; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="nav-container">
+            <!-- form-create 渲染容器 -->
+            <form-create v-model:api="fApi" :rule="rule" :option="option"></form-create>
+        </div>
+
+        <!-- 模拟页面内容切换 -->
+        <div class="content-display">
+            当前所在页面: <b style="color: #409EFF">{{ activePage }}</b>
+        </div>
+    </div>
+
+    <script>
+        const { ref } = Vue;
+
+        const App = {
+            setup() {
+                const fApi = ref({});
+                const activePage = ref('首页');
+
+                // 1. 定义导航的 Rule
+                const rule = ref([
+                    {
+                        type: 'el-menu',
+                        field: 'nav_menu',
+                        value: 'home', // 默认选中首页
+                        props: {
+                            mode: 'horizontal', // 水平模式
+                            backgroundColor: '#545c64',
+                            textColor: '#fff',
+                            activeTextColor: '#ffd04b',
+                            ellipsis: false
+                        },
+                        // 监听菜单点击事件
+                        on: {
+                            select: (index) => {
+                                // 逻辑：根据点击的 index 更新展示内容
+                                const labels = {
+                                    'home': '首页',
+                                    'product-1': '云服务器',
+                                    'product-2': '数据库',
+                                    'about': '关于我们'
+                                };
+                                activePage.value = labels[index] || index;
+                            }
+                        },
+                        // 2. 定义导航子项 (Children)
+                        children: [
+                            {
+                                type: 'el-menu-item',
+                                props: { index: 'home' },
+                                children: ['首页']
+                            },
+                            {
+                                type: 'el-sub-menu',
+                                props: { index: 'products' },
+                                // sub-menu 的标题需要放在 slots.title 里
+                                children: [
+                                    { type: 'template', slot: 'title', children: ['产品服务'] },
+                                    { type: 'el-menu-item', props: { index: 'product-1' }, children: ['云服务器'] },
+                                    { type: 'el-menu-item', props: { index: 'product-2' }, children: ['数据库'] }
+                                ]
+                            },
+                            {
+                                type: 'el-menu-item',
+                                props: { index: 'about' },
+                                children: ['关于我们']
+                            }
+                        ]
+                    }
+                ]);
+
+                // 3. 全局配置（去掉表单默认的按钮和样式）
+                const option = {
+                    submitBtn: false, // 隐藏提交按钮
+                    resetBtn: false,  // 隐藏重置按钮
+                    form: {
+                        inline: false,
+                        labelWidth: '0'
+                    }
+                };
+
+                return {
+                    fApi,
+                    rule,
+                    option,
+                    activePage
+                };
+            }
+        };
+
+        const app = Vue.createApp(App);
+        app.use(ElementPlus);
+        app.use(formCreateElement); // 注册 form-create
+        app.mount('#app');
+    </script>
+</body>
+</html>

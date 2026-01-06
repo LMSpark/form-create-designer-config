@@ -645,6 +645,26 @@ const En = {
                 align: 'Vertical arrangement under flex layout'
             }
         },
+        fcNav: {
+            name: 'Navigation',
+            props: {
+                mode: 'Mode',
+                defaultActive: 'Default active menu',
+                backgroundColor: 'Background color',
+                textColor: 'Text color',
+                activeTextColor: 'Active text color',
+                collapse: 'Whether to collapse',
+                ellipsis: 'Whether to omit extra items'
+            }
+        },
+        fcMenuItem: {
+            name: 'Menu item',
+            props: {
+                index: 'Unique identifier',
+                formCreateChild: 'Menu text',
+                disabled: 'Disabled'
+            }
+        },
         fcTable: {
             name: 'Table',
             props: {

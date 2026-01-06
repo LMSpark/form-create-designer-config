@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>form-create 导航配置（工程化优化版）</title>
+
+  <!-- Element Plus -->
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+  <script src="https://unpkg.com/vue@3"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+
+  <!-- form-create (Vue3 + Element Plus) -->
+  <script src="https://unpkg.com/@form-create/element-ui@next"></script>
+<style>
+.mega-nav {
+  padding: 0 32px;
+  border-bottom: 1px solid #eee;
+}
+
+.mega-popper {
+  padding: 0 !important;
+}
+
+.mega-panel {
+  width: 720px;
+  padding: 24px 32px;
+}
+
+.mega-item {
+  padding: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.mega-item:hover {
+  background: #f5f7fa;
+}
+
+.mega-title {
+  font-weight: 600;
+}
+
+.mega-desc {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- 顶部官网导航（Mega Menu 官网级） -->
+  <el-menu
+    mode="horizontal"
+    :default-active="activePath"
+    class="mega-nav"
+  >
+    <template v-for="nav in navList" :key="nav.id">
+      <!-- Mega Menu -->
+      <el-sub-menu
+        v-if="nav.children && nav.children.length && nav.is_show"
+        :index="nav.id"
+        popper-class="mega-popper"
+      >
+        <template #title>{{ nav.nav_name }}</template>
+
+        <div class="mega-panel">
+          <el-row :gutter="24">
+            <el-col
+              v-for="child in nav.children"
+              :key="child.id"
+              :span="6"
+            >
+              <div
+                v-if="child.is_show"
+                class="mega-item"
+                @click="onNavClick(child)"
+              >
+                <div class="mega-title">{{ child.nav_name }}</div>
+                <div class="mega-desc">内部页面 / 产品入口</div>
+              </div>
+            </el-col>
+          </el-row>
+        </div>
+      </el-sub-menu>
+
+      <!-- 普通导航 -->
+      <el-menu-item
+        v-else-if="nav.is_show"
+        :index="nav.id"
+        @click="onNavClick(nav)"
+      >
+        {{ nav.nav_name }}
+      </el-menu-item>
+    </template>
+  </el-menu>
+
+  <!-- 页面内容区 -->
+  <div style="padding:24px;max-width:860px;margin:auto">
+    <h2>导航项配置（Schema 驱动 · 优化版）</h2>
+    <p style="color:#666;font-size:13px">示例：模拟<strong>后端下发导航 Schema</strong>，前端仅负责渲染与行为执行</p>
+
+    <form-create$1></form-create>
+
+    <el-divider />
+
+  
+
+  <el-row :gutter="24">
+    <el-col :span="12">
+      <el-card shadow="never">
+        <template #header>当前 Schema 结果</template>
+        <pre style="font-size:12px">{{ formData }}</pre>
+      </el-card>
+    </el-col>
+
+    <el-col :span="12">
+      <el-card shadow="never">
+        <template #header>导航数据（后端下发示例）</template>
+        <pre style="font-size:12px">{{ navList }}</pre>
+      </el-card>
+    </el-col>
+  </el-row>
+</div>
+
+<script>
+const { createApp, ref, reactive } = Vue
+
+createApp({
+  setup () {
+    /**
+     * form-create API
+     */
+    const fApi = ref(null)
+    const formData = ref({})
+
+    /**
+     * 页面选项（真实项目中通常来自接口）
+     */
+        /**
+     * ================================
+     * 模拟后端下发的导航 Schema 数据
+     * ================================
+     */
+    const navList = ref([
+      {
+        id: 'home',
+        nav_name: '首页',
+        target_type: 1,
+        page_id: 'home',
+        open_method: '_self',
+        is_show: true
+      },
+      {
+        id: 'product',
+        nav_name: '产品',
+        is_show: true,
+        children: [
+          {
+            id: 'product-a',
+            nav_name: '产品 A',
+            target_type: 1,
+            page_id: 'product-a',
+            open_method: '_self',
+            is_show: true
+          },
+          {
+            id: 'product-b',
+            nav_name: '产品 B',
+            target_type: 1,
+            page_id: 'product-b',
+            open_method: '_self',
+            is_show: true
+          }
+        ]
+      },
+      {
+        id: 'github',
+        nav_name: 'GitHub',
+        target_type: 2,
+        external_url: 'https://github.com',
+        open_method: '_blank',
+        is_show: true
+      }
+    ])
+
+    const activePath = ref('home')
+
+    const PAGE_OPTIONS = [
+      { value: 'home', label: '系统首页' },
+      { value: 'about', label: '关于我们' },
+      { value: 'news', label: '新闻中心' }
+    ]
+
+    /**
+     * Rule Schema（工程化写法）
+     */
+    const rules = ref([
+      {
+        type: 'input',
+        field: 'nav_name',
+        title: '导航名称',
+        value: '',
+        props: {
+          placeholder: '请输入导航显示名称'
+        },
+        validate: [
+          { required: true, message: '导航名称不能为空', trigger: 'blur' }
+        ]
+      },
+
+      {
+        type: 'radio',
+        field: 'target_type',
+        title: '跳转类型',
+        value: 1,
+        options: [
+          { value: 1, label: '内部页面' },
+          { value: 2, label: '外部链接' }
+        ],
+
+        /**
+         * 关键优化点：
+         * - control + remove
+         * - 防止脏字段残留
+         */
+        control: [
+          {
+            value: 1,
+            remove: ['external_url'],
+            rule: [
+              {
+                type: 'select',
+                field: 'page_id',
+                title: '目标页面',
+                value: 'home',
+                options: PAGE_OPTIONS,
+                validate: [
+                  { required: true, message: '请选择页面', trigger: 'change' }
+                ]
+              }
+            ]
+          },
+          {
+            value: 2,
+            remove: ['page_id'],
+            rule: [
+              {
+                type: 'input',
+                field: 'external_url',
+                title: '外部链接地址',
+                value: 'https://',
+                props: {
+                  placeholder: 'https://example.com'
+                },
+                validate: [
+                  { required: true, message: '链接不能为空', trigger: 'blur' },
+                  { type: 'url', message: 'URL 格式不正确', trigger: 'blur' }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        type: 'select',
+        field: 'open_method',
+        title: '打开方式',
+        value: '_self',
+        options: [
+          { value: '_self', label: '当前窗口' },
+          { value: '_blank', label: '新窗口' }
+        ]
+      },
+
+      {
+        type: 'switch',
+        field: 'is_show',
+        title: '是否显示',
+        value: true
+      }
+    ])
+
+    /**
+     * 全局表单配置
+     */
+    const option = reactive({
+      form: {
+        labelWidth: '120px'
+      },
+      submitBtn: {
+        innerText: '保存导航配置',
+        type: 'primary',
+        size: 'large',
+        width: '100%'
+      },
+      resetBtn: false
+    })
+
+    /**
+     * 提交逻辑（真实项目：请求接口）
+     */
+        const onSubmit = (data) => {
+      console.log('提交数据:', data)
+      navList.value.push({
+        id: Date.now().toString(),
+        ...data
+      })
+      ElementPlus.ElMessage.success('已模拟写入后端 Schema')
+    }
+
+    /**
+     * 根据配置执行导航行为
+     */
+    const onNavClick = (nav) => {
+      activePath.value = nav.id
+
+      if (nav.target_type === 1) {
+        ElementPlus.ElMessage.info(`内部跳转 → 页面：${nav.page_id}`)
+      }
+
+      if (nav.target_type === 2) {
+        window.open(nav.external_url, nav.open_method)
+      }
+    }
+
+        return {
+      fApi,
+      formData,
+      rules,
+      option,
+      navList,
+      activePath,
+      onNavClick,
+      onSubmit
+    }
+  }
+})
+.use(ElementPlus)
+.use(formCreate)
+.mount('#app')
+</script>
+</body>
+</html>

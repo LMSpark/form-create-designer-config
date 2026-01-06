@@ -48,7 +48,7 @@ import {isNull} from '../../utils/index';
 import TableOptions from '../TableOptions.vue';
 import PositionInput from './PositionInput.vue';
 import toLine from '@form-create/utils/lib/toline';
-import toCase from "@form-create/utils/lib/tocase";
+import toCase from '@form-create/utils/lib/tocase';
 
 const fontKey = [
     'fontFamily',

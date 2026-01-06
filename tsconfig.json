@@ -4,14 +4,16 @@
 		"target": "ESNext",
 		"sourceMap": true,
 		"allowUnreachableCode": true,
-    "allowSyntheticDefaultImports": true,
+		"allowSyntheticDefaultImports": true,
 		"allowJs": true,
 		"experimentalDecorators": true,
 		"moduleResolution": "node",
 		"noImplicitThis": true,
 		"noImplicitAny": false,
 		"importHelpers": true,
-		"jsx": "preserve"
+		"jsx": "preserve",
+		"strict": true,
+		"forceConsistentCasingInFileNames": true
 	},
 	"include": [
 		"*.vue",

@@ -1,0 +1,4 @@
+{
+  "script": "console.log('工作台页面已加载'); console.log('页面初始化完成'); window.testButtonClick = function() { alert('✅ JavaScript 执行成功！\\n按钮变色说明 CSS 也生效了！'); console.log('🎯 测试按钮被点击'); }; window.showAlert = function() { const now = new Date().toLocaleTimeString(); alert('🔔 当前时间: ' + now); };",
+  "style": ".content-section { padding: 20px; background: #fff; border-radius: 8px; transition: transform 0.2s; }\n.content-section:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }\n.test-button { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; font-weight: bold; }\n.test-button:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }"
+}

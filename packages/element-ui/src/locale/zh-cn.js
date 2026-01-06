@@ -645,6 +645,26 @@ const ZhCn = {
                 align: 'flex布局下的垂直排列方式'
             }
         },
+        fcNav: {
+            name: '导航容器',
+            props: {
+                mode: '模式',
+                defaultActive: '默认激活菜单',
+                backgroundColor: '背景色',
+                textColor: '文字颜色',
+                activeTextColor: '激活文字颜色',
+                collapse: '是否水平折叠',
+                ellipsis: '是否省略多余的子项'
+            }
+        },
+        fcMenuItem: {
+            name: '菜单项',
+            props: {
+                index: '唯一标识',
+                formCreateChild: '菜单文本',
+                disabled: '是否禁用'
+            }
+        },
         fcTable: {
             name: '表格布局',
             props: {

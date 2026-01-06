@@ -1,0 +1,23 @@
+{
+  "name": "form-create-demo-ts",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@form-create/element-ui": "^3.2.0",
+    "element-plus": "^2.5.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.4",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21",
+    "vite-plugin-mock": "^3.0.2",
+    "vue-tsc": "^1.8.27"
+  }
+}

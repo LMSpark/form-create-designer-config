@@ -120,14 +120,14 @@ export function generateLineDiff(oldJson, newJson, contextLines = 5) {
     const changeBlocks = [];
     const sortedChangedIndices = Array.from(changedIndices).sort((a, b) => a - b);
 
-    let currentBlock = { start: sortedChangedIndices[0], end: sortedChangedIndices[0] };
+    let currentBlock = {start: sortedChangedIndices[0], end: sortedChangedIndices[0]};
 
     for (let i = 1; i < sortedChangedIndices.length; i++) {
         if (sortedChangedIndices[i] === currentBlock.end + 1) {
             currentBlock.end = sortedChangedIndices[i];
         } else {
             changeBlocks.push(currentBlock);
-            currentBlock = { start: sortedChangedIndices[i], end: sortedChangedIndices[i] };
+            currentBlock = {start: sortedChangedIndices[i], end: sortedChangedIndices[i]};
         }
     }
     changeBlocks.push(currentBlock);

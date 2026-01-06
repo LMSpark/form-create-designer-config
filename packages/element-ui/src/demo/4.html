@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>form-create 导航配置（工程化优化版）</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+  <script src="https://unpkg.com/vue@3"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+  <script src="https://unpkg.com/@form-create/element-ui@next"></script>
+<style>
+.mega-nav { padding: 0 32px; border-bottom: 1px solid #eee; background: #fff; }
+.mega-popper { padding: 0 !important; }
+.mega-panel { width: 600px; padding: 20px; }
+.mega-item { padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+.mega-item:hover { background: #ecf5ff; }
+.mega-title { font-weight: 600; color: #409EFF; }
+.mega-desc { font-size: 12px; color: #999; margin-top: 4px; }
+pre { background: #2d2d2d; color: #ccc; padding: 10px; border-radius: 5px; overflow: auto; }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- 1. 导航展示效果 (Renderer) -->
+  <el-menu mode="horizontal" :default-active="activePath" class="mega-nav">
+    <template v-for="nav in navList" :key="nav.id">
+      <!-- Mega Menu (带子菜单) -->
+      <el-sub-menu v-if="nav.children && nav.children.length && nav.is_show" :index="nav.id" popper-class="mega-popper">
+        <template #title>{{ nav.nav_name }}</template>
+        <div class="mega-panel">
+          <el-row :gutter="20">
+            <el-col v-for="child in nav.children" :key="child.id" :span="12">
+              <div v-if="child.is_show" class="mega-item" @click="onNavClick(child)">
+                <div class="mega-title">{{ child.nav_name }}</div>
+                <div class="mega-desc">{{ child.target_type === 1 ? '内部系统页面' : '外部跳转链接' }}</div>
+              </div>
+            </el-col>
+          </el-row>
+        </div>
+      </el-sub-menu>
+
+      <!-- 普通导航 (无子菜单) -->
+      <el-menu-item v-else-if="nav.is_show" :index="nav.id" @click="onNavClick(nav)">
+        {{ nav.nav_name }}
+      </el-menu-item>
+    </template>
+  </el-menu>
+
+  <!-- 2. 导航编辑器 (Editor) -->
+  <div style="padding:24px;max-width:1000px;margin:auto">
+    <h2>导航 Schema 编辑器</h2>
+    <p style="color:#666;font-size:13px">通过 form-create 生成符合业务逻辑的 JSON 数据</p>
+
+    <!-- 修正：绑定了 rule, option, api 和 modelValue -->
+    <form-create
+      v-model:api="fApi"
+      v-model="formData"
+      :rule="rules"
+      :option="option"
+      @on-submit="onSubmit"
+    ></form-create>
+
+    <el-divider></el-divider>
+
+    <el-row :gutter="24">
+      <el-col :span="12">
+        <el-card shadow="never" header="当前表单状态 (formData)">
+          <pre>{{ formData }}</pre>
+        </el-card>
+      </el-col>
+      <el-col :span="12">
+        <el-card shadow="never" header="最终导航列表 (navList)">
+          <pre>{{ navList }}</pre>
+        </el-card>
+      </el-col>
+    </el-row>
+  </div>
+</div>
+
+<script>
+const { createApp, ref, reactive } = Vue
+
+createApp({
+  setup () {
+    const fApi = ref(null)
+    const formData = ref({})
+    const activePath = ref('home')
+
+    // 初始导航数据
+    const navList = ref([
+      { id: 'home', nav_name: '首页', target_type: 1, page_id: 'home', is_show: true },
+      {
+        id: 'product', nav_name: '产品中心', is_show: true,
+        children: [
+          { id: 'p1', nav_name: '云服务器', target_type: 1, page_id: 'news', is_show: true },
+          { id: 'p2', nav_name: '开发文档', target_type: 2, external_url: 'https://github.com', open_method: '_blank', is_show: true }
+        ]
+      }
+    ])
+
+    const PAGE_OPTIONS = [
+      { value: 'home', label: '系统首页' },
+      { value: 'news', label: '新闻中心' }
+    ]
+
+    // Form-Create Rules
+    const rules = ref([
+      { type: 'input', field: 'nav_name', title: '导航名称', value: '新菜单', validate: [{required:true}] },
+      {
+        type: 'radio', field: 'target_type', title: '跳转类型', value: 1,
+        options: [{ value: 1, label: '内部页面' }, { value: 2, label: '外部链接' }],
+        control: [
+          { value: 1, remove: ['external_url'], rule: [{ type: 'select', field: 'page_id', title: '目标页面', options: PAGE_OPTIONS }] },
+          { value: 2, remove: ['page_id'], rule: [{ type: 'input', field: 'external_url', title: '链接地址', value: 'https://' }] }
+        ]
+      },
+      { type: 'select', field: 'open_method', title: '打开方式', value: '_self', options: [{value:'_self',label:'当前窗口'}, {value:'_blank',label:'新窗口'}] },
+      { type: 'switch', field: 'is_show', title: '是否显示', value: true }
+    ])
+
+    const option = {
+      form: { labelWidth: '100px' },
+      submitBtn: { innerText: '添加到导航栏', width: '100%' }
+    }
+
+    const onSubmit = (data) => {
+      // 点击提交，将编辑器的数据推入导航展示列表
+      navList.value.push({ id: Date.now().toString(), ...data })
+      ElementPlus.ElMessage.success('导航项已添加')
+    }
+
+    const onNavClick = (nav) => {
+      activePath.value = nav.id
+      if (nav.target_type === 1) {
+        ElementPlus.ElMessage.info(`触发路由跳转: ${nav.page_id}`)
+      } else {
+        window.open(nav.external_url, nav.open_method)
+      }
+    }
+
+    return { fApi, formData, rules, option, navList, activePath, onNavClick, onSubmit }
+  }
+})
+.use(ElementPlus)
+.use(formCreate)
+.mount('#app')
+</script>
+</body>
+</html>

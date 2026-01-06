@@ -1,0 +1,4 @@
+{
+  "script": "console.log('系统设置页面已加载');",
+  "style": ".settings-form { padding: 20px; background: #fff; }"
+}
