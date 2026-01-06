@@ -28,15 +28,15 @@
 </template>
 
 <script setup lang="ts">
-// import {computed} from 'vue'
-// import {useRouter} from 'vue-router'
+import {computed} from 'vue'
+import {useRouter} from 'vue-router'
 
-// const router = useRouter()
+const router = useRouter()
 
-// 从路由中获取菜单列表（暂未使用）
-// const menuRoutes = computed(() => {
-//     return router.getRoutes().filter(route => route.meta?.title)
-// })
+// 从路由中获取菜单列表
+const menuRoutes = computed(() => {
+    return router.getRoutes().filter(route => route.meta?.title)
+})
 </script>
 
 <style scoped>
